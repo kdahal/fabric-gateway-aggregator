@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Fabric Port Access Ecosystem API
+  description: API for the FP-Adapt-Aggregator to manage physical and logical network ports.
+  version: 1.0.0
+servers:
+  - url: https://api.fabric.internal/v1
+    description: Production Gateway
+
+paths:
+  /ports/provision:
+    post:
+      summary: Initiate Port Provisioning
+      description: |
+        Asynchronously triggers the provisioning of a physical fabric port.
+        The service validates the request and dispatches a task to the NATS broker.
+      operationId: provisionPort
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortProvisionRequest'
+      responses:
+        '202':
+          description: Provisioning accepted and queued.
+        '400':
+          description: Invalid port configuration.
+        '401':
+          description: Unauthorized - Valid JWT required.
+
+components:
+  schemas:
+    PortProvisionRequest:
+      type: object
+      required:
+        - portId
+        - vlanId
+        - fabricZone
+      properties:
+        portId:
+          type: string
+          example: "Eth-1-48"
+        vlanId:
+          type: integer
+          minimum: 1
+          maximum: 4094
+          example: 100
+        fabricZone:
+          type: string
+          enum: [GCP-US-CENTRAL, AWS-US-EAST, ON-PREM-DC]
+          example: "GCP-US-CENTRAL"
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
