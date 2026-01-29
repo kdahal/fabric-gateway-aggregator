@@ -9,6 +9,63 @@ To architect a scalable ecosystem that automates the lifecycle of physical fabri
 
 
 ## Architectural Blueprint
+
+
+graph TD
+    %% Define Styles
+    classDef cloud fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef logic fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef physical fill:#dfd,stroke:#333,stroke-width:2px;
+
+    subgraph User_Interface [User Interface]
+        GUI[FP-Remote-GUI]
+    end
+
+    subgraph Control_Plane [Control Plane - GCP/GKE]
+        API[OpenAPI 3.0 Gateway]
+        AGG[FP-Adapt-Aggregator - Go]
+        DB[(Cloud SQL - State Store)]
+    end
+
+    subgraph Message_Bus [Distributed Messaging]
+        NATS{NATS / Kafka Broker}
+    end
+
+    subgraph Cloud_Infrastructure [Multi-Cloud Fabric]
+        GCP_NET[GCP Project VPC]
+        AWS_NET[AWS VPC / Direct Connect]
+        VPN[Terraform Managed VPN/Interconnect]
+    end
+
+    subgraph Physical_Layer [Physical Network Fabric]
+        SW1[Edge Switch 1 - Vendor A]
+        SW2[Edge Switch 2 - Vendor B]
+        PORT[Physical Fabric Ports]
+    end
+
+    %% Relationships
+    GUI -->|REST/JSON| API
+    API -->|Validate| AGG
+    AGG -.->|Sync State| DB
+    AGG -->|Async Publish| NATS
+    
+    NATS -->|Provisioning Task| GCP_NET
+    NATS -->|Provisioning Task| AWS_NET
+    
+    GCP_NET <--> VPN <--> AWS_NET
+    
+    GCP_NET -->|SDN/NFV Config| SW1
+    AWS_NET -->|SDN/NFV Config| SW2
+    
+    SW1 --> PORT
+    SW2 --> PORT
+
+    %% Assign Classes
+    class GCP_NET,AWS_NET,VPN cloud;
+    class API,AGG,DB logic;
+    class SW1,SW2,PORT physical;
+
+
 1. **Asynchronous Fabric Controller (Go):** The core service acts as an orchestration layer, handling high-concurrency device heartbeats and state transitions.
 2. **Logic Layer (FP-Adapt-Aggregator):** A microservice that consumes OpenAPI requests and translates them into device-specific SDN/NFV configurations.
 3. **Asynchronous Messaging (NATS/Kafka):** Implements a message-driven approach to ensure "eventual consistency" across the global fabric without blocking the UI.
