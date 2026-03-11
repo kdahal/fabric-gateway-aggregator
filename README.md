@@ -10,7 +10,8 @@ To architect a scalable ecosystem that automates the lifecycle of physical fabri
 
 ## Architectural Blueprint
 
-```mermaidv
+```mermaid
+
 graph TD
     %% Define Styles
     classDef cloud fill:#f9f,stroke:#333,stroke-width:2px;
@@ -64,6 +65,34 @@ graph TD
     class GCP_NET,AWS_NET,VPN cloud;
     class API,AGG,DB logic;
     class SW1,SW2,PORT physical;
+
+```
+
+
+```mermaid
+graph TD
+    subgraph "External World"
+        User((Admin/Customer))
+    end
+
+    subgraph "Lumen Ecosystem (GCP)"
+        GUI[FP-Remote-GUI / Node.js]
+        Agg[FP-Adapt-Aggregator / Go]
+        Twin[(Digital Twin / Spanner Graph)]
+    end
+
+    subgraph "Physical Network (On-Prem/Edge)"
+        Switch1[Cisco/Arista Switch]
+        Switch2[Juniper Router]
+        Sensors[Telemetry Stream]
+    end
+
+    User -->|OpenAPI| GUI
+    GUI -->|gRPC/REST| Agg
+    Agg <--> Twin
+    Agg -->|Pulsar/Kafka| Sensors
+    Agg -->|Netconf/YANG| Switch1
+    Agg -->|Netconf/YANG| Switch2
 
 ```
 
