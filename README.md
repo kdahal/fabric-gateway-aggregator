@@ -66,6 +66,34 @@ graph TD
     class SW1,SW2,PORT physical;
 
 ```
+
+```
+graph TD
+    subgraph "External World"
+        User((Admin/Customer))
+    end
+
+    subgraph "Lumen Ecosystem (GCP)"
+        GUI[FP-Remote-GUI / Node.js]
+        Agg[FP-Adapt-Aggregator / Go]
+        Twin[(Digital Twin / Spanner Graph)]
+    end
+
+    subgraph "Physical Network (On-Prem/Edge)"
+        Switch1[Cisco/Arista Switch]
+        Switch2[Juniper Router]
+        Sensors[Telemetry Stream]
+    end
+
+    User -->|OpenAPI| GUI
+    GUI -->|gRPC/REST| Agg
+    Agg <--> Twin
+    Agg -->|Pulsar/Kafka| Sensors
+    Agg -->|Netconf/YANG| Switch1
+    Agg -->|Netconf/YANG| Switch2
+
+
+```    
 1. **Asynchronous Fabric Controller (Go):** The core service acts as an orchestration layer, handling high-concurrency device heartbeats and state transitions.
 2. **Logic Layer (FP-Adapt-Aggregator):** A microservice that consumes OpenAPI requests and translates them into device-specific SDN/NFV configurations.
 3. **Asynchronous Messaging (NATS/Kafka):** Implements a message-driven approach to ensure "eventual consistency" across the global fabric without blocking the UI.
