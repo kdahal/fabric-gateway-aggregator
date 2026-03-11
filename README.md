@@ -10,7 +10,7 @@ To architect a scalable ecosystem that automates the lifecycle of physical fabri
 
 ## Architectural Blueprint
 
-```mermaid
+```mermaidv
 graph TD
     %% Define Styles
     classDef cloud fill:#f9f,stroke:#333,stroke-width:2px;
@@ -66,8 +66,8 @@ graph TD
     class SW1,SW2,PORT physical;
 
 ```
+```mermaidv
 
-```
 graph TD
     subgraph "External World"
         User((Admin/Customer))
